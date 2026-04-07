@@ -1,8 +1,12 @@
 const express = require("express");
+const cors = require("cors");
+
 const app = express();
-const cors = require("cors")
-app.use(cors())
+
+
+app.use(cors());
 app.use(express.json());
+
 
 const db = require("./db");
 
@@ -23,6 +27,7 @@ app.post("/supplier", (req, res) => {
 
   db.query(query, [name, city], (err, result) => {
     if (err) {
+      console.error(err);
       return res.status(500).json({ message: "Database error" });
     }
 
@@ -34,7 +39,6 @@ app.post("/supplier", (req, res) => {
 app.post("/inventory", (req, res) => {
   const { supplier_id, product_name, category, quantity, price } = req.body;
 
-  // Validation
   if (!supplier_id || !product_name || !category) {
     return res.status(400).json({ message: "Missing required fields" });
   }
@@ -47,11 +51,11 @@ app.post("/inventory", (req, res) => {
     return res.status(400).json({ message: "Price must be > 0" });
   }
 
-
   const checkSupplier = "SELECT * FROM suppliers WHERE id = ?";
 
   db.query(checkSupplier, [supplier_id], (err, result) => {
     if (err) {
+      console.error(err);
       return res.status(500).json({ message: "Error checking supplier" });
     }
 
@@ -67,8 +71,9 @@ app.post("/inventory", (req, res) => {
     db.query(
       insertQuery,
       [supplier_id, product_name, category, quantity, price],
-      (err, data) => {
+      (err) => {
         if (err) {
+          console.error(err);
           return res.status(500).json({ message: "Error inserting inventory" });
         }
 
@@ -78,18 +83,19 @@ app.post("/inventory", (req, res) => {
   });
 });
 
+
 app.get("/inventory", (req, res) => {
   const query = "SELECT * FROM inventory";
 
   db.query(query, (err, result) => {
     if (err) {
+      console.error(err);
       return res.status(500).json({ error: "Fetching error" });
     }
 
-    res.json(result); // empty array is fine
+    res.json(result);
   });
 });
-
 
 app.get("/inventory/grouped", (req, res) => {
   const query = `
@@ -104,13 +110,13 @@ app.get("/inventory/grouped", (req, res) => {
 
   db.query(query, (err, result) => {
     if (err) {
+      console.error(err);
       return res.status(500).json({ message: "Error fetching grouped data" });
     }
 
     res.json(result);
   });
 });
-
 
 app.get("/search", (req, res) => {
   let { q, category, minPrice, maxPrice } = req.query;
@@ -128,12 +134,13 @@ app.get("/search", (req, res) => {
     params.push(`%${q}%`);
   }
 
- 
+
   if (category) {
     query += " AND LOWER(category) = LOWER(?)";
     params.push(category);
   }
 
+  
   if (minPrice) {
     query += " AND price >= ?";
     params.push(minPrice);
@@ -146,6 +153,7 @@ app.get("/search", (req, res) => {
 
   db.query(query, params, (err, result) => {
     if (err) {
+      console.error(err);
       return res.status(500).json({ message: "Error searching" });
     }
 
@@ -153,7 +161,8 @@ app.get("/search", (req, res) => {
   });
 });
 
+const PORT = process.env.PORT || 5000;
 
-app.listen(5000, () => {
-  console.log("Server running at http://localhost:5000 🚀");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} 🚀`);
 });
