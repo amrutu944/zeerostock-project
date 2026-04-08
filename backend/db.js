@@ -6,7 +6,7 @@ const db = mysql.createConnection({
   password: "IsaqqJtYDePDbeNvZcvJCURjLJiqGxNx",   // replace stars
   database: "railway",
   port: 16798,
-  connectTimeout: 10000
+//   connectTimeout: 10000
 });
 
 db.connect((err) => {

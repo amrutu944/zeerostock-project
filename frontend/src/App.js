@@ -10,27 +10,36 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
-    setLoading(true);
-    setSearched(false);
+  setLoading(true);
+  setSearched(false);
 
-    const params = new URLSearchParams({
-      q,
-      minPrice,
-      maxPrice
-    });
+  const params = new URLSearchParams({
+    q,
+    minPrice,
+    maxPrice
+  });
 
-    try {
-      const res = await fetch(`http://127.0.0.1:5000/search?${params}`);
-      const data = await res.json();
+  try {
+    const res = await fetch(`https://zeerostock-project-l4l2.onrender.com/search?${params}`);
 
-      setResults(data);
-      setSearched(true);
-    } catch (err) {
-      console.log(err);
+    // 🔥 ADD THIS CHECK
+    if (!res.ok) {
+      throw new Error("Server error");
     }
 
-    setLoading(false);
-  };
+    const data = await res.json();
+
+    setResults(data);
+    setSearched(true);
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+    setResults([]);        // ✅ stop infinite loading
+    setSearched(true);     // ✅ show "No results"
+  }
+
+  setLoading(false);       // ✅ ALWAYS STOP LOADING
+};
 
   return (
     <div className="container">
